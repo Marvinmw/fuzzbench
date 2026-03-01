@@ -480,6 +480,9 @@ class LocalDispatcher(BaseDispatcher):
     def start(self):
         """Start the experiment on the dispatcher."""
         container_name = 'dispatcher-container'
+        # Remove stale container with same name (if any) to avoid conflict.
+        subprocess.run(['docker', 'rm', '-f', container_name],
+                       capture_output=True)
         experiment_filestore_path = os.path.abspath(
             self.config['experiment_filestore'])
         filesystem.create_directory(experiment_filestore_path)
