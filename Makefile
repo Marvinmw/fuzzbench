@@ -48,8 +48,15 @@ SHELL := /bin/bash
 VENV_ACTIVATE := .venv/bin/activate
 
 ${VENV_ACTIVATE}: requirements.txt
-	python3.10 -m venv .venv || python3 -m venv .venv
-	source ${VENV_ACTIVATE} && python3 -m pip install setuptools && python3 -m pip install -r requirements.txt
+	@if [ -f .venv/.reqs_md5 ] && md5sum -c .venv/.reqs_md5 --quiet 2>/dev/null; then \
+		echo "=== venv cache hit, skipping pip install ==="; \
+	else \
+		echo "=== Creating venv and installing dependencies ==="; \
+		python3.10 -m venv .venv || python3 -m venv .venv; \
+		source ${VENV_ACTIVATE} && python3 -m pip install setuptools && python3 -m pip install -r requirements.txt; \
+		md5sum requirements.txt > .venv/.reqs_md5; \
+	fi
+	@touch ${VENV_ACTIVATE}
 
 install-dependencies: ${VENV_ACTIVATE}
 

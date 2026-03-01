@@ -531,6 +531,13 @@ class LocalDispatcher(BaseDispatcher):
             '-e',
             set_worker_pool_name_arg,
         ]
+        # Persistent venv cache: mount host dir into container so pip
+        # install is skipped on subsequent runs.
+        venv_cache_dir = os.path.join(
+            os.path.abspath(utils.ROOT_DIR), '.venv_cache')
+        os.makedirs(venv_cache_dir, exist_ok=True)
+        venv_cache_arg = f'{venv_cache_dir}:/work/src/.venv'
+
         command = [
             'docker',
             'run',
@@ -542,6 +549,8 @@ class LocalDispatcher(BaseDispatcher):
             shared_experiment_filestore_arg,
             '-v',
             shared_report_filestore_arg,
+            '-v',
+            venv_cache_arg,
         ] + environment_args + [
             '--shm-size=2g',
             '--cap-add=SYS_PTRACE',
